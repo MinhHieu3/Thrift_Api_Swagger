@@ -91,9 +91,9 @@ return int64(*p), nil
 //  - Name
 //  - Age
 type User struct {
-  ID string `thrift:"id,1" db:"id" json:"id"`
-  Name string `thrift:"name,2" db:"name" json:"name"`
-  Age int32 `thrift:"age,3" db:"age" json:"age"`
+  ID string `thrift:"id,1,required" db:"id" json:"id"`
+  Name string `thrift:"name,2,required" db:"name" json:"name"`
+  Age int32 `thrift:"age,3,required" db:"age" json:"age"`
 }
 
 func NewUser() *User {
@@ -117,6 +117,9 @@ func (p *User) Read(ctx context.Context, iprot thrift.TProtocol) error {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
+  var issetID bool = false;
+  var issetName bool = false;
+  var issetAge bool = false;
 
   for {
     _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
@@ -130,6 +133,7 @@ func (p *User) Read(ctx context.Context, iprot thrift.TProtocol) error {
         if err := p.ReadField1(ctx, iprot); err != nil {
           return err
         }
+        issetID = true
       } else {
         if err := iprot.Skip(ctx, fieldTypeId); err != nil {
           return err
@@ -140,6 +144,7 @@ func (p *User) Read(ctx context.Context, iprot thrift.TProtocol) error {
         if err := p.ReadField2(ctx, iprot); err != nil {
           return err
         }
+        issetName = true
       } else {
         if err := iprot.Skip(ctx, fieldTypeId); err != nil {
           return err
@@ -150,6 +155,7 @@ func (p *User) Read(ctx context.Context, iprot thrift.TProtocol) error {
         if err := p.ReadField3(ctx, iprot); err != nil {
           return err
         }
+        issetAge = true
       } else {
         if err := iprot.Skip(ctx, fieldTypeId); err != nil {
           return err
@@ -166,6 +172,15 @@ func (p *User) Read(ctx context.Context, iprot thrift.TProtocol) error {
   }
   if err := iprot.ReadStructEnd(ctx); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  if !issetID{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field ID is not set"));
+  }
+  if !issetName{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Name is not set"));
+  }
+  if !issetAge{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Age is not set"));
   }
   return nil
 }

@@ -30,10 +30,10 @@ func (u *UserHandler) GetListUser(ctx context.Context, _ []string) (*example.TLi
 		Data:      users,
 	}, nil
 }
+
 func (u *UserHandler) PostUser(ctx context.Context, data *example.User) (*example.TDataResult_, error) {
 	err := u.db.Save(data).Error
 	if err != nil {
-		log.Println("Error inserting user into database:", err)
 		return &example.TDataResult_{ErrorCode: example.TErrorCode_EUnknown}, err
 	}
 	return &example.TDataResult_{ErrorCode: example.TErrorCode_EGood, Data: data}, nil
@@ -46,14 +46,12 @@ func (u *UserHandler) PutUser(ctx context.Context, key string, data *example.Use
 		if err == gorm.ErrRecordNotFound {
 			return  &example.TDataResult_{ErrorCode: example.TErrorCode_EUnknown}, err
 		}
-		log.Println("Error finding user in database:", err)
 		return  &example.TDataResult_{ErrorCode: example.TErrorCode_EUnknown}, err
 	}
 	user.Name = data.Name
 	user.Age=data.Age
 	err = u.db.Save(&user).Error
 	if err != nil {
-		log.Println("Error updating user in database:", err)
 		return  &example.TDataResult_{ErrorCode: example.TErrorCode_EUnknown}, err
 	}
 	return  &example.TDataResult_{ErrorCode: example.TErrorCode_EGood, Data: data}, nil
@@ -62,11 +60,8 @@ func (u *UserHandler) PutUser(ctx context.Context, key string, data *example.Use
 func (u *UserHandler) RemoveUser(ctx context.Context, key string) (example.TErrorCode, error) {
 	err := u.db.Where("id = ?", key).Delete(&example.User{}).Error
 	if err != nil {
-		log.Println("Error deleting user from database:", err)
 		return example.TErrorCode_EUnknown, err
 	}
-
-	log.Printf("Deleted user with ID: %s", key)
 	return example.TErrorCode_EGood, nil
 }
 
@@ -82,7 +77,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error creating server socket:", err)
 	}
-
 	server := thrift.NewTSimpleServer2(processor, serverTransport)
 	fmt.Println("Starting the server...")
 	if err := server.Serve(); err != nil {

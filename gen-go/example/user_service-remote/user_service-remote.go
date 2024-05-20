@@ -15,7 +15,6 @@ import (
 	thrift "github.com/apache/thrift/lib/go/thrift"
 	"Demo_Api/gen-go/example"
 )
-
 var _ = example.GoUnusedProtection__
 
 func Usage() {

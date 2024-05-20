@@ -8,9 +8,9 @@ enum TErrorCode{
 }
 
 struct User{
-    1: string id,
-    2: string name,
-    3: i32 age,
+    1:required string id,
+    2:required string name,
+    3:required i32 age,
 }
 
 struct TDataResult{

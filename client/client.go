@@ -5,8 +5,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	_ "Demo_Api/docs"
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 )
 
 type ThriftClient struct {
@@ -46,7 +49,15 @@ func init() {
 	}
 }
 
-func Post(c *gin.Context) {
+
+// @Summary Create 
+// @Description Create a new user with the provided data
+// @Param   user     body    example.User    true        "User data"
+// @Success 200 {object} example.User "Successfully created user"
+// @Success 200 {object} []example.User "List of users"
+// @Failure 400 {object} []example.TErrorCode "Invalid request body"
+// @Router /api/users [post]
+func Create(c *gin.Context) {
 	var user example.User
     if err := c.BindJSON(&user); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{
@@ -65,7 +76,16 @@ func Post(c *gin.Context) {
 
     c.JSON(http.StatusOK, dataResult)
 }
-func Put(c *gin.Context) {
+
+// @Summary Update
+// @Description Update an existing user with the provided data
+// @Param   id     path    string     true        "User ID"
+// @Param   user     body    example.User    true        "User data"
+// @Success 200 {object} []example.User "Successfully updated user"
+// @Failure 400 {object} []example.TErrorCode "Invalid request body"
+// @Failure 404 {object} []example.TErrorCode "User not found"
+// @Router /api/users/{id} [put]
+func Update(c *gin.Context) {
 	id := c.Param("id")
 	var update example.User
 	if err := c.BindJSON(&update); err != nil {
@@ -80,8 +100,12 @@ func Put(c *gin.Context) {
 
 	c.JSON(http.StatusOK, data)
 }
-
-func GetAll(c *gin.Context) {
+// FindAll return list of all user fromm the database
+// @Summary Get all 
+// @Description Get a list of all users
+// @Success 200 {object} []example.User "List of users"
+// @Router /api/users [get]
+func FindAll(c *gin.Context) {
 	listData, err := thriftClient.client.GetListUser(context.Background(), []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -89,7 +113,12 @@ func GetAll(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, listData)
   }
-
+// @Summary Delete 
+// @Description Delete a user by ID
+// @Param   id     path    string     true        "User ID"
+// @Success 200 {string} string "User deleted successfully"
+// @Failure 404 {object} []example.TErrorCode "User not found"
+// @Router /api/users/{id} [delete]
 func Delete(c *gin.Context) {
 	id := c.Param("id")
 	_, err := thriftClient.client.RemoveUser(context.Background(), id)
@@ -97,24 +126,24 @@ func Delete(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to delete user: %s", err.Error())})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
-
+// @title Documenting Api
+// @version 1
+// @Description Sample decription
+// @contact.url https://github.com/demo
+// @host localhost:8080
+// @BasePath /api/users
 func main() {
-	router := gin.Default()
-	rou :=router.Group("/api")
+	r := gin.Default()
+	router:=r.Group("api/users")
     {
-	rou.POST("/get", Post)
-	rou.GET("/getAll", GetAll)
-	rou.PUT("/:id",Put)
-	rou.DELETE("/:id",Delete)
+		router.POST("/", Create)
+		router.GET("/", FindAll)
+		router.PUT("/:id",Update)
+		router.DELETE("/:id",Delete)
    }
-	
+   r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	err = router.Run(":8080")
-	if err != nil {
-		fmt.Println("Error starting server:", err)
-		return
-	}
+r.Run()
 }
